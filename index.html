@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星座運勢小宇宙</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      color: #292442; background: radial-gradient(circle at 15% 15%, #fff4dc 0, transparent 28%),
+      radial-gradient(circle at 85% 80%, #d9d7ff 0, transparent 32%), linear-gradient(135deg,#f8eaff,#e8edff);
+      display: grid; place-items: center; padding: 32px 18px;
+    }
+    .brand { position: fixed; top: 22px; right: 28px; font-weight: 800; letter-spacing: 2px; color: #59458c; font-size: 20px; }
+    .card { width: min(100%, 560px); padding: 38px; border: 1px solid #ffffffb8; border-radius: 28px;
+      background: #ffffffd9; box-shadow: 0 20px 60px #65558b24; backdrop-filter: blur(12px); }
+    .eyebrow { color: #8b75b6; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-align: center; }
+    h1 { text-align: center; margin: 10px 0 8px; font-size: clamp(28px,5vw,38px); }
+    .intro { text-align: center; color: #77718a; margin: 0 0 28px; line-height: 1.7; }
+    label { display: block; font-weight: 700; margin-bottom: 10px; }
+    input { width: 100%; padding: 15px 16px; border: 1px solid #d9d1eb; border-radius: 13px; font: inherit; color: #292442; background: #fff; }
+    input:focus { outline: 3px solid #dcd0ff; border-color: #9c83d4; }
+    button { width: 100%; margin-top: 16px; padding: 15px; border: 0; border-radius: 13px; color: white;
+      background: linear-gradient(100deg,#8870c4,#6258a8); font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s, opacity .2s; }
+    button:hover { transform: translateY(-2px); opacity: .94; }
+    #result { display: none; margin-top: 26px; padding: 24px; border-radius: 18px; background: linear-gradient(135deg,#f5efff,#eef2ff); }
+    .sign { text-align: center; font-size: 25px; font-weight: 900; color: #604c99; }
+    .date { text-align: center; color: #837b99; font-size: 13px; margin: 7px 0 18px; }
+    .fortune { line-height: 1.85; color: #514b64; }
+    .fortune p { margin: 10px 0; }
+    .tip { margin-top: 16px; padding-top: 14px; border-top: 1px solid #ddd5ef; font-weight: 700; color: #65539a; }
+    .disclaimer { text-align: center; color: #9a94a8; font-size: 12px; margin: 18px 0 0; }
+    @media (max-width: 480px) { .card { padding: 27px 21px; } .brand { top: 14px; right: 18px; } }
+  </style>
+</head>
+<body>
+  <div class="brand">26wei</div>
+  <main class="card">
+    <div class="eyebrow">YOUR DAILY COSMIC NOTE</div>
+    <h1>✨ 星座運勢小宇宙</h1>
+    <p class="intro">輸入你的生日，看看今天宇宙準備了什麼小提醒。</p>
+    <form id="birthdayForm">
+      <label for="birthday">你的出生日期</label>
+      <input id="birthday" type="date" required>
+      <button type="submit">查看我的星座運勢 ✦</button>
+    </form>
+    <section id="result" aria-live="polite">
+      <div class="sign" id="signName"></div>
+      <div class="date" id="signDate"></div>
+      <div class="fortune" id="fortuneText"></div>
+      <div class="tip" id="tipText"></div>
+    </section>
+    <p class="disclaimer">星座內容僅供娛樂與自我探索參考。</p>
+  </main>
+<script>
+  const zodiac = [
+    { name: "摩羯座 ♑", start: [1, 1], end: [1, 19] },
+    { name: "水瓶座 ♒", start: [1, 20], end: [2, 18] },
+    { name: "雙魚座 ♓", start: [2, 19], end: [3, 20] },
+    { name: "牡羊座 ♈", start: [3, 21], end: [4, 19] },
+    { name: "金牛座 ♉", start: [4, 20], end: [5, 20] },
+    { name: "雙子座 ♊", start: [5, 21], end: [6, 20] },
+    { name: "巨蟹座 ♋", start: [6, 21], end: [7, 22] },
+    { name: "獅子座 ♌", start: [7, 23], end: [8, 22] },
+    { name: "處女座 ♍", start: [8, 23], end: [9, 22] },
+    { name: "天秤座 ♎", start: [9, 23], end: [10, 22] },
+    { name: "天蠍座 ♏", start: [10, 23], end: [11, 21] },
+    { name: "射手座 ♐", start: [11, 22], end: [12, 21] },
+    { name: "摩羯座 ♑", start: [12, 22], end: [12, 31] }
+  ];
+  const fortunes = [
+    ["今天適合把注意力放回自己身上。慢慢整理手邊的事，你會發現原本複雜的問題開始有了方向。",
+     "人際互動有機會帶來小驚喜，主動關心身邊的人，可能會收到溫暖的回應。",
+     "學習或工作上適合先完成最重要的一件事，不必急著一次做到完美。"],
+    ["今天的靈感特別活躍，適合嘗試新的方法。把想法記下來，之後可能派上用場。",
+     "溝通時多留一點耐心，先聽完對方的想法，能讓事情進展得更順利。",
+     "給自己一段放鬆的時間，散步、聽音樂或整理房間，都能幫助你重新充電。"],
+    ["今天適合穩穩前進。即使進度不快，只要持續累積，也能看見自己的努力。",
+     "一個小小的善意可能讓氣氛變得更好，別吝嗇你的鼓勵與感謝。",
+     "面對選擇時先確認真正重視的事情，不需要因為別人的步調而感到著急。"]
+  ];
+  const tips = ["幸運色：薰衣草紫｜幸運關鍵字：勇敢嘗試", "幸運色：奶油黃｜幸運關鍵字：保持好奇", "幸運色：天空藍｜幸運關鍵字：穩定前進", "幸運色：薄荷綠｜幸運關鍵字：好好溝通"];
+  function getZodiac(month, day) {
+    for (const sign of zodiac) {
+      const afterStart = month > sign.start[0] || (month === sign.start[0] && day >= sign.start[1]);
+      const beforeEnd = month < sign.end[0] || (month === sign.end[0] && day <= sign.end[1]);
+      if (afterStart && beforeEnd) return sign.name;
+    }
+    return "摩羯座 ♑";
+  }
+  document.getElementById("birthdayForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const value = document.getElementById("birthday").value;
+    if (!value) return;
+    const [year, month, day] = value.split("-").map(Number);
+    const sign = getZodiac(month, day);
+    const seed = (year * 13 + month * 7 + day) % 3;
+    const tip = (year + month + day) % tips.length;
+    document.getElementById("signName").textContent = sign;
+    document.getElementById("signDate").textContent = `${year} 年 ${month} 月 ${day} 日出生`;
+    document.getElementById("fortuneText").innerHTML =
+      `<p><strong>🌟 整體運勢</strong><br>${fortunes[seed][0]}</p>` +
+      `<p><strong>💬 人際與溝通</strong><br>${fortunes[(seed + 1) % 3][1]}</p>` +
+      `<p><strong>📚 學習與成長</strong><br>${fortunes[(seed + 2) % 3][2]}</p>`;
+    document.getElementById("tipText").textContent = tips[tip];
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+</script>
+</body>
+</html>
